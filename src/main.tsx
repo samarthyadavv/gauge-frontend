@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -31,9 +32,10 @@ import {
   parseCaseJson,
   type TestCase,
 } from "./DatasetCases";
+import { createDemoApi } from "./demo";
 import "./style.css";
 type Provider = { id: string; name: string; models: string[] };
-type Dataset = {
+export type Dataset = {
   id: string;
   name: string;
   description: string;
@@ -56,7 +58,7 @@ type Summary = {
   cost_usd: number | null;
   cost_complete: boolean;
 };
-type Result = {
+export type Result = {
   position: number;
   prompt: string;
   expected: string;
@@ -71,7 +73,7 @@ type Result = {
   cost_usd: number | null;
   error: string | null;
 };
-type Run = {
+export type Run = {
   id: string;
   name: string;
   dataset_id: string;
@@ -127,6 +129,8 @@ const starter: TestCase[] = [
     match: "contains",
   },
 ];
+const demo = import.meta.env.MODE === "recruiter";
+const demoApi = demo ? createDemoApi(starter) : null;
 const percent = (x: number) => (x * 100).toFixed(1) + "%";
 const ms = (x: number | null) =>
   x === null
@@ -236,7 +240,9 @@ function App() {
     const headers = new Headers(init.headers);
     if (init.body) headers.set("Content-Type", "application/json");
     if (csrf) headers.set("X-CSRF-Token", csrf);
-    const r = await fetch("/api" + path, { ...init, headers });
+    const r = await (demoApi
+      ? demoApi(path, init)
+      : fetch("/api" + path, { ...init, headers }));
     if (!r.ok) {
       if (r.status === 401) setAuthenticated(false);
       const d = await r.json().catch(() => ({ detail: "Request failed" }));
@@ -369,8 +375,27 @@ function App() {
           </div>
         </section>
         <section className="login-card">
-          <h1>Sign in to Gauge</h1>
-          {backendUnavailable ? (
+          <h1>{demo ? "Explore Gauge" : "Sign in to Gauge"}</h1>
+          {demo ? (
+            <div className="service-status">
+              <p>
+                Explore sample runs, create datasets, and compare mock results.
+                Changes stay in this browser tab.
+              </p>
+              <button
+                className="primary"
+                disabled={busy}
+                onClick={() =>
+                  void action(async () => {
+                    await api("/session", { method: "POST" });
+                    await initialize();
+                  })
+                }
+              >
+                Open demo <ArrowRight size={16} />
+              </button>
+            </div>
+          ) : backendUnavailable ? (
             <div className="service-status">
               <p role="status">
                 The Gauge backend is unavailable. Connect a running backend to
@@ -517,7 +542,9 @@ function App() {
             <span className="dot" />{" "}
             {providers.some((p) => p.id === "openai")
               ? "Mock + OpenAI configured"
-              : "Mock provider available"}
+              : demo
+                ? "Recruiter demo · browser only"
+                : "Mock provider available"}
           </span>
           <button
             className="icon mobile-logout"

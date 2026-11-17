@@ -7,6 +7,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "build:netlify": "npm run build && node scripts/netlify-redirects.mjs",
+    "build:demo": "tsc -b && vite build --mode recruiter",
     "check": "tsc -b",
     "test:e2e": "playwright test"
   },

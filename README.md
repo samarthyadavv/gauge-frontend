@@ -21,3 +21,7 @@ Import this repository in Netlify. `netlify.toml` sets the build command and pub
 To enable sign-in and evaluations, deploy the Gauge FastAPI web service and worker with their database. Set `GAUGE_API_ORIGIN` in Netlify's build environment to the HTTPS origin of that web service, such as `https://api.example.com`, and redeploy. The build generates a same-origin `/api` proxy so the browser can use Gauge's session cookie and CSRF token. Set the backend's `BASE_URL` to the exact HTTPS origin of the Netlify frontend and keep `ADMIN_KEY` and provider keys in the backend environment.
 
 The browser test in `tests/evaluation.spec.ts` expects a test-only Gauge server on port 9201 serving this build, with its test operator key supplied through `E2E_ADMIN_KEY`.
+
+## Recruiter demo
+
+The `codex/recruiter-demo` branch builds a standalone browser-only demo with `npm run build:demo`. It uses synthetic data and a deterministic mock provider. The demo has no API proxy or operator key. Changes are discarded on reload.

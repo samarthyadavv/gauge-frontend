@@ -1378,3 +1378,7 @@ textarea {
 .service-status .secondary {
   margin-top: 16px;
 }
+
+.service-status .primary {
+  margin-top: 16px;
+}
